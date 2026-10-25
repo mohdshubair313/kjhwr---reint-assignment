@@ -1,0 +1,14 @@
+**/__pycache__/
+**/.venv/
+**/.pytest_cache/
+**/.ruff_cache/
+**/node_modules/
+**/dist/
+.env
+.env.*
+!.env.example
+backend/data/*.sqlite
+!backend/data/january-2026.sqlite
+backend/data/*.tmp
+artifacts/phase-2-fetch/
+AGENTS.md

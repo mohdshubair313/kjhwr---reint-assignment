@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - REINT_SNAPSHOT_PATH=/app/data/january-2026.sqlite
+      - REINT_STATIC_DIR=/app/static
+      - REINT_CORS_ORIGINS=
+    volumes:
+      # Mount local snapshot for development; production bakes it into the image
+      - ./backend/data:/app/data:ro

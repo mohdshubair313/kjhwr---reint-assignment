@@ -1,0 +1,4 @@
+{
+    "windfor":  "https://data.elexon.co.uk/bmrs/api/v1/datasets/WINDFOR/stream?publishDateTimeFrom=2025-12-31T00%3A00%3A00Z\u0026publishDateTimeTo=2026-01-31T23%3A59%3A59Z",
+    "fuelhh":  "https://data.elexon.co.uk/bmrs/api/v1/datasets/FUELHH/stream?publishDateTimeFrom=2026-01-02T00%3A00%3A00Z\u0026publishDateTimeTo=2026-02-02T02%3A00%3A00Z\u0026fuelType=WIND"
+}

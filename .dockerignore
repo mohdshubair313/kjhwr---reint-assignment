@@ -1,0 +1,16 @@
+**/__pycache__/
+**/.venv/
+**/.pytest_cache/
+**/.ruff_cache/
+**/node_modules/
+**/dist/
+**/.git/
+**/.gitignore
+*.md
+.env
+.env.*
+backend/data/*.tmp
+artifacts/phase-2-fetch/
+frontend/test-results/
+frontend/tests/
+scripts/

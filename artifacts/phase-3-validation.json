@@ -1,0 +1,31 @@
+{
+  "validated_at": "2026-10-25T08:38:18.421812+00:00",
+  "transport": "FastAPI TestClient (in-process ASGI)",
+  "snapshot_id": "f94bb0d40287431b054bb8e484a9c05dd923e015dc4b494c99d792d7a210d0bc",
+  "http_statuses": {
+    "health": 200,
+    "metadata": 200,
+    "forecast": 200,
+    "evaluation": 200,
+    "openapi": 200
+  },
+  "decision_start": "2026-01-01",
+  "decision_end": "2026-01-31",
+  "cutoff_local": "09:00",
+  "timezone": "Europe/London",
+  "evaluation_mode": "retrospective",
+  "summary": {
+    "expected_hours": 744,
+    "paired_hours": 744,
+    "coverage": 1.0,
+    "forecast_hours": 744,
+    "actual_hours": 744,
+    "mae_mw": 2038.9126344086021,
+    "bias_mw": 1747.8870967741937,
+    "rmse_mw": 2504.758652899355,
+    "p90_absolute_error_mw": 4097.9,
+    "signed_energy_error_mwh": 1300428.0
+  },
+  "daily_results": 31,
+  "hourly_results": 744
+}

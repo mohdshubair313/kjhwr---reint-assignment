@@ -1,0 +1,990 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "REint Wind Forecast API",
+    "description": "January 2026 day-ahead forecast replay and retrospective accuracy.",
+    "version": "0.3.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Snapshot is missing or unreadable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/metadata": {
+      "get": {
+        "summary": "Get Metadata",
+        "operationId": "get_metadata_api_metadata_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetadataResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Snapshot is missing or unreadable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/forecast": {
+      "get": {
+        "summary": "Forecast",
+        "operationId": "forecast_api_forecast_get",
+        "parameters": [
+          {
+            "name": "decision_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Decision Date"
+            }
+          },
+          {
+            "name": "cutoff",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(?:[01][0-9]|2[0-3]):[0-5][0-9]$",
+              "description": "Local Europe/London decision cutoff, HH:MM",
+              "default": "09:00",
+              "title": "Cutoff"
+            },
+            "description": "Local Europe/London decision cutoff, HH:MM"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Snapshot is missing or unreadable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/evaluation": {
+      "get": {
+        "summary": "Evaluation",
+        "operationId": "evaluation_api_evaluation_get",
+        "parameters": [
+          {
+            "name": "decision_start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "default": "2026-01-01",
+              "title": "Decision Start"
+            }
+          },
+          {
+            "name": "decision_end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "default": "2026-01-31",
+              "title": "Decision End"
+            }
+          },
+          {
+            "name": "cutoff",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(?:[01][0-9]|2[0-3]):[0-5][0-9]$",
+              "description": "Local Europe/London decision cutoff, HH:MM",
+              "default": "09:00",
+              "title": "Cutoff"
+            },
+            "description": "Local Europe/London decision cutoff, HH:MM"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Snapshot is missing or unreadable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DailyEvaluation": {
+        "properties": {
+          "decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Decision Date"
+          },
+          "delivery_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery Date"
+          },
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff"
+          },
+          "mixed_forecast_vintages": {
+            "type": "boolean",
+            "title": "Mixed Forecast Vintages"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/Metrics"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision_date",
+          "delivery_date",
+          "cutoff",
+          "mixed_forecast_vintages",
+          "metrics"
+        ],
+        "title": "DailyEvaluation"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorResponse"
+      },
+      "EvaluationPoint": {
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End Time"
+          },
+          "forecast_mw": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Mw"
+          },
+          "forecast_publish_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Publish Time"
+          },
+          "forecast_age_hours": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Age Hours"
+          },
+          "lead_time_hours": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Time Hours"
+          },
+          "quality_flags": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "missing_forecast",
+                "missing_actual_half_hour",
+                "older_publication_fallback"
+              ]
+            },
+            "type": "array",
+            "title": "Quality Flags"
+          },
+          "decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Decision Date"
+          },
+          "delivery_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery Date"
+          },
+          "actual_mw": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Mw"
+          },
+          "actual_publish_times": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Actual Publish Times"
+          },
+          "paired": {
+            "type": "boolean",
+            "title": "Paired"
+          },
+          "error_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Mw"
+          },
+          "absolute_error_mw": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Absolute Error Mw"
+          },
+          "energy_error_mwh": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Energy Error Mwh"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "start_time",
+          "end_time",
+          "forecast_mw",
+          "forecast_publish_time",
+          "forecast_age_hours",
+          "lead_time_hours",
+          "quality_flags",
+          "decision_date",
+          "delivery_date",
+          "actual_mw",
+          "actual_publish_times",
+          "paired",
+          "error_mw",
+          "absolute_error_mw",
+          "energy_error_mwh"
+        ],
+        "title": "EvaluationPoint"
+      },
+      "EvaluationResponse": {
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "title": "Snapshot Id"
+          },
+          "decision_start": {
+            "type": "string",
+            "format": "date",
+            "title": "Decision Start"
+          },
+          "decision_end": {
+            "type": "string",
+            "format": "date",
+            "title": "Decision End"
+          },
+          "cutoff_local": {
+            "type": "string",
+            "title": "Cutoff Local"
+          },
+          "timezone": {
+            "type": "string",
+            "const": "Europe/London",
+            "title": "Timezone"
+          },
+          "evaluation_mode": {
+            "type": "string",
+            "const": "retrospective",
+            "title": "Evaluation Mode"
+          },
+          "error_definition": {
+            "type": "string",
+            "const": "forecast_minus_actual",
+            "title": "Error Definition"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Metrics"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/DailyEvaluation"
+            },
+            "type": "array",
+            "title": "Days"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/EvaluationPoint"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "snapshot_id",
+          "decision_start",
+          "decision_end",
+          "cutoff_local",
+          "timezone",
+          "evaluation_mode",
+          "error_definition",
+          "summary",
+          "days",
+          "rows"
+        ],
+        "title": "EvaluationResponse"
+      },
+      "ForecastPoint": {
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End Time"
+          },
+          "forecast_mw": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Mw"
+          },
+          "forecast_publish_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Publish Time"
+          },
+          "forecast_age_hours": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Age Hours"
+          },
+          "lead_time_hours": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Time Hours"
+          },
+          "quality_flags": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "missing_forecast",
+                "missing_actual_half_hour",
+                "older_publication_fallback"
+              ]
+            },
+            "type": "array",
+            "title": "Quality Flags"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "start_time",
+          "end_time",
+          "forecast_mw",
+          "forecast_publish_time",
+          "forecast_age_hours",
+          "lead_time_hours",
+          "quality_flags"
+        ],
+        "title": "ForecastPoint"
+      },
+      "ForecastResponse": {
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "title": "Snapshot Id"
+          },
+          "decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Decision Date"
+          },
+          "delivery_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery Date"
+          },
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff"
+          },
+          "timezone": {
+            "type": "string",
+            "const": "Europe/London",
+            "title": "Timezone"
+          },
+          "cutoff_is_assumption": {
+            "type": "boolean",
+            "title": "Cutoff Is Assumption"
+          },
+          "expected_hours": {
+            "type": "integer",
+            "title": "Expected Hours"
+          },
+          "forecast_hours": {
+            "type": "integer",
+            "title": "Forecast Hours"
+          },
+          "forecast_coverage": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Forecast Coverage"
+          },
+          "mixed_forecast_vintages": {
+            "type": "boolean",
+            "title": "Mixed Forecast Vintages"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastPoint"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "snapshot_id",
+          "decision_date",
+          "delivery_date",
+          "cutoff",
+          "timezone",
+          "cutoff_is_assumption",
+          "expected_hours",
+          "forecast_hours",
+          "forecast_coverage",
+          "mixed_forecast_vintages",
+          "rows"
+        ],
+        "title": "ForecastResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "snapshot_id": {
+            "type": "string",
+            "title": "Snapshot Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "snapshot_id"
+        ],
+        "title": "HealthResponse"
+      },
+      "MetadataResponse": {
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "title": "Snapshot Id"
+          },
+          "normalized_sha256": {
+            "type": "string",
+            "title": "Normalized Sha256"
+          },
+          "schema_version": {
+            "type": "integer",
+            "title": "Schema Version"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          },
+          "decision_start": {
+            "type": "string",
+            "format": "date",
+            "title": "Decision Start"
+          },
+          "decision_end": {
+            "type": "string",
+            "format": "date",
+            "title": "Decision End"
+          },
+          "delivery_start": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery Start"
+          },
+          "delivery_end": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery End"
+          },
+          "timezone": {
+            "type": "string",
+            "const": "Europe/London",
+            "title": "Timezone"
+          },
+          "default_cutoff": {
+            "type": "string",
+            "title": "Default Cutoff"
+          },
+          "resolution_minutes": {
+            "type": "integer",
+            "title": "Resolution Minutes"
+          },
+          "generation_unit": {
+            "type": "string",
+            "const": "MW",
+            "title": "Generation Unit"
+          },
+          "energy_unit": {
+            "type": "string",
+            "const": "MWh",
+            "title": "Energy Unit"
+          },
+          "record_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Record Counts"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "methodology": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Methodology"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "snapshot_id",
+          "normalized_sha256",
+          "schema_version",
+          "policy_version",
+          "decision_start",
+          "decision_end",
+          "delivery_start",
+          "delivery_end",
+          "timezone",
+          "default_cutoff",
+          "resolution_minutes",
+          "generation_unit",
+          "energy_unit",
+          "record_counts",
+          "sources",
+          "methodology"
+        ],
+        "title": "MetadataResponse"
+      },
+      "Metrics": {
+        "properties": {
+          "expected_hours": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Hours"
+          },
+          "paired_hours": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Paired Hours"
+          },
+          "coverage": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Coverage"
+          },
+          "forecast_hours": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Forecast Hours"
+          },
+          "actual_hours": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Actual Hours"
+          },
+          "mae_mw": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mae Mw"
+          },
+          "bias_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bias Mw"
+          },
+          "rmse_mw": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rmse Mw"
+          },
+          "p90_absolute_error_mw": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P90 Absolute Error Mw"
+          },
+          "signed_energy_error_mwh": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signed Energy Error Mwh"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_hours",
+          "paired_hours",
+          "coverage",
+          "forecast_hours",
+          "actual_hours",
+          "mae_mw",
+          "bias_mw",
+          "rmse_mw",
+          "p90_absolute_error_mw",
+          "signed_energy_error_mwh"
+        ],
+        "title": "Metrics"
+      },
+      "Source": {
+        "properties": {
+          "dataset": {
+            "type": "string",
+            "enum": [
+              "WINDFOR",
+              "FUELHH"
+            ],
+            "title": "Dataset"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "retrieved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retrieved At"
+          },
+          "retrieved_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retrieved Date"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dataset",
+          "url",
+          "sha256",
+          "retrieved_at",
+          "retrieved_date"
+        ],
+        "title": "Source"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
